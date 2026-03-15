@@ -250,7 +250,10 @@ def menu_hayvan() -> list[int] | None:
     return ids or None
 
 def interaktif():
+    global DAR_EKRAN
     console.print(HEADER)
+    ekran = Prompt.ask("Ekran tipi", choices=["telefon", "tablet"], default="tablet").strip()
+    DAR_EKRAN = ekran == "telefon"
     con = get_conn()
 
     # İstatistik özeti
