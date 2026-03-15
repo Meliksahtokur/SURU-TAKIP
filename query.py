@@ -103,7 +103,7 @@ def run_query(
 
 # ── Görüntüleme ───────────────────────────────────────────────────────────────
 
-def display(rows: list[sqlite3.Row], baslik: str = "Sonuçlar"):
+def display(rows: list[sqlite3.Row], baslik: str = "Sonuçlar", dar: bool = False):
     if not rows:
         console.print("[yellow]⚠️  Kayıt bulunamadı.[/yellow]")
         return
