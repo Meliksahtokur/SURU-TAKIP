@@ -115,12 +115,11 @@ def display(rows: list[sqlite3.Row], baslik: str = "Sonuçlar"):
         show_lines=True,
     )
 
-    t.add_column("Küpe No",    style="white",   min_width=20)
-
-    t.add_column("Sperma",     style="white",   min_width=25)
-    t.add_column("Tohumlama",  style="green",   min_width=12, no_wrap=True)
-    t.add_column("Gebe Gün",   style="magenta", min_width=8,  no_wrap=True)
-    t.add_column("Tahmini Doğum", style="cyan", min_width=13, no_wrap=True)
+    t.add_column("Küpe No",      style="white",   min_width=15)
+    if not dar:
+        t.add_column("Tohumlama", style="green",  min_width=12, no_wrap=True)
+    t.add_column("Gebe Gün",     style="magenta", min_width=8,  no_wrap=True)
+    t.add_column("Tahmini Doğum", style="cyan",   min_width=12, no_wrap=True)
 
 
     for r in rows:
