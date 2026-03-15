@@ -147,15 +147,10 @@ def display(rows: list[sqlite3.Row], baslik: str = "Sonuçlar"):
             except:
                 pass
 
-        sperma_temiz = (r["sperma"] or "—").split("|")[0].strip()
-
-        t.add_row(
-            r["kupe_no"]       or "—",
-            sperma_temiz,
-            r["tohumlama_tar"] or "—",
-            gun,
-            dogum,
-        )
+        if dar:
+            t.add_row(r["kupe_no"] or "—", gun, dogum)
+        else:
+            t.add_row(r["kupe_no"] or "—", r["tohumlama_tar"] or "—", gun, dogum)
 
     console.print(t)
 
