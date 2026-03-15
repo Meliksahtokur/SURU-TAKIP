@@ -305,7 +305,7 @@ def interaktif():
         if hayvan_ids: parts.append("ID: " + "+".join(str(i) for i in hayvan_ids))
         baslik = "  |  ".join(parts) if parts else "Tüm kayıtlar"
 
-        display(rows, baslik)
+        display(rows, baslik, dar=DAR_EKRAN)
 
         devam = Prompt.ask(
             "\n[dim]Yeni sorgu[/dim] ([bold]Enter[/bold]) "
