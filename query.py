@@ -190,6 +190,8 @@ HEADER = """
 [dim]data/tohumlamalar.db  |  çıkış: q[/dim]
 """
 
+DAR_EKRAN = False  # açılışta ayarlanır
+
 def menu_tarih() -> tuple[str | None, str | None]:
     console.print("\n[bold]Tarih aralığı:[/bold]")
     console.print(
