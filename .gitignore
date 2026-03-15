@@ -1,0 +1,4 @@
+data/tohumlamalar.db
+__pycache__/
+*.pyc
+*.bak
