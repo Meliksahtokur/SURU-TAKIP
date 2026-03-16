@@ -159,6 +159,63 @@ def display_boslar(rows: list[sqlite3.Row], baslik: str = "Laktasyona Tekrar Gir
         
     console.print(t)
 
+def get_bos_hayvanlar(con):
+    query = """
+    WITH SonGebelikler AS (
+        SELECT hayvan_id, MAX(tohumlama_tar) as son_gebe_tarihi
+        FROM tohumlamalar
+        WHERE gebe = 1 OR gebe = 'TRUE'
+        GROUP BY hayvan_id
+    ),
+    GuncelDurum AS (
+        SELECT 
+            t.hayvan_id,
+            t.kupe_no,
+            MAX(t.tohumlama_tar) as son_tohumlama_tarihi,
+            COUNT(t.id) as tohumlama_sayisi
+        FROM tohumlamalar t
+        INNER JOIN SonGebelikler sg ON t.hayvan_id = sg.hayvan_id
+        WHERE t.tohumlama_tar > sg.son_gebe_tarihi
+          AND (t.gebe = 0 OR t.gebe IS NULL OR t.gebe = 'FALSE')
+        GROUP BY t.hayvan_id, t.kupe_no
+    )
+    SELECT kupe_no, son_tohumlama_tarihi, tohumlama_sayisi 
+    FROM GuncelDurum 
+    ORDER BY son_tohumlama_tarihi DESC;
+    """
+    return con.execute(query).fetchall()
+
+def display_boslar(rows: list[sqlite3.Row], baslik: str = "Laktasyona Tekrar Giren Boşlar", dar: bool = False):
+    from datetime import datetime
+    t = Table(
+        title=f"{baslik}  —  {len(rows)} kayıt",
+        box=box.SIMPLE_HEAVY,
+        highlight=True,
+        show_lines=True,
+    )
+    t.add_column("Küpe No", style="white", min_width=15)
+    t.add_column("Son Tohumlama", style="green", min_width=12, justify="center")
+    t.add_column("Geçen Gün", style="yellow", min_width=8, justify="center")
+    t.add_column("Tohumlama Sayısı", style="red", min_width=15, justify="center")
+
+    bugun = datetime.now()
+    for r in rows:
+        kupe_no = str(r["kupe_no"]) if r["kupe_no"] else "—"
+        son_tohumlama = r["son_tohumlama_tarihi"]
+        sayi = str(r["tohumlama_sayisi"])
+        
+        gecen_gun = "—"
+        if son_tohumlama:
+            try:
+                s_date = datetime.strptime(son_tohumlama, "%Y-%m-%d")
+                gecen_gun = str((bugun - s_date).days)
+            except ValueError:
+                pass
+                
+        t.add_row(kupe_no, son_tohumlama or "—", gecen_gun, sayi)
+        
+    console.print(t)
+
 def display(rows: list[sqlite3.Row], baslik: str = "Sonuçlar", dar: bool = False):
     if not rows:
         console.print("[yellow]⚠️  Kayıt bulunamadı.[/yellow]")
