@@ -350,7 +350,15 @@ def interaktif():
             bos_rows = get_bos_hayvanlar(con)
             display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
         else:
-            display(rows, baslik, dar=DAR_EKRAN)
+            if args.kupe:
+                q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(args.kupe))}) ORDER BY tohumlama_tar DESC"
+                r = con.execute(q, args.kupe).fetchall()
+                display(r, f"Küpe Geçmişi: {', '.join(args.kupe)}", dar=DAR_EKRAN)
+            elif args.gebe == 0:
+                r = get_bos_hayvanlar(con)
+                display_boslar(r, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
+            else:
+                display(rows, baslik, dar=DAR_EKRAN)
 
         devam = Prompt.ask(
             "\n[dim]Yeni sorgu[/dim] ([bold]Enter[/bold]) "
