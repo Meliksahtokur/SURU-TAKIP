@@ -138,9 +138,13 @@ def display_boslar(rows, baslik, dar=False):
         gecen = "—"
         if r["son_tohumlama_tarihi"]:
             try:
-                d = datetime.strptime(r["son_tohumlama_tarihi"], "%Y-%m-%d")
-                gecen = str((datetime.now() - d).days)
-            except: pass
+                # String geliyorsa parse et, objeyse direkt kullan
+                st = r["son_tohumlama_tarihi"]
+                d = datetime.strptime(st, "%Y-%m-%d") if isinstance(st, str) else st
+                fark = (datetime.now() - d).days
+                gecen = str(fark)
+            except Exception:
+                gecen = "ERR"
         t.add_row(str(r["kupe_no"]), r["son_tohumlama_tarihi"] or "—", gecen, str(r["tohumlama_sayisi"]))
     console.print(t)
 
