@@ -536,7 +536,11 @@ def cli_mode():
         tarih_bas=tarih_bas,
         tarih_bit=tarih_bit,
     )
-    display(rows)
+    if args.gebe == 0:
+        bos_rows = get_bos_hayvanlar(con)
+        display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
+    else:
+        display(rows)
     con.close()
 
 
