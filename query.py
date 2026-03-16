@@ -475,7 +475,11 @@ def interaktif():
         if hayvan_ids: parts.append("ID: " + "+".join(str(i) for i in hayvan_ids))
         baslik = "  |  ".join(parts) if parts else "Tüm kayıtlar"
 
-        display(rows, baslik, dar=DAR_EKRAN)
+        if "Boş" in baslik:
+            bos_rows = get_bos_hayvanlar(con)
+            display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
+        else:
+            display(rows, baslik, dar=DAR_EKRAN)
 
         devam = Prompt.ask(
             "\n[dim]Yeni sorgu[/dim] ([bold]Enter[/bold]) "
