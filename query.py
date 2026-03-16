@@ -105,27 +105,28 @@ def run_query(
 
 def get_bos_hayvanlar(con):
     query = """
-    WITH SonGebelikler AS (
-        SELECT hayvan_id, MAX(tohumlama_tar) as son_gebe_tarihi
-        FROM tohumlamalar
-        WHERE gebe = 1 OR gebe = 'TRUE'
-        GROUP BY hayvan_id
-    ),
-    GuncelDurum AS (
+    WITH HayvanDurum AS (
         SELECT 
-            t.hayvan_id,
-            t.kupe_no,
-            MAX(t.tohumlama_tar) as son_tohumlama_tarihi,
-            COUNT(t.id) as tohumlama_sayisi
-        FROM tohumlamalar t
-        INNER JOIN SonGebelikler sg ON t.hayvan_id = sg.hayvan_id
-        WHERE t.tohumlama_tar > sg.son_gebe_tarihi
-          AND (t.gebe = 0 OR t.gebe IS NULL OR t.gebe = 'FALSE')
-        GROUP BY t.hayvan_id, t.kupe_no
+            hayvan_id,
+            kupe_no,
+            MAX(tohumlama_tar) as son_tohumlama,
+            MAX(CASE WHEN gebe IN (1, '1', 'TRUE', 'true') THEN tohumlama_tar ELSE NULL END) as son_gebe_tar
+        FROM tohumlamalar
+        GROUP BY hayvan_id, kupe_no
+    ),
+    BosHayvanlar AS (
+        SELECT * FROM HayvanDurum
+        WHERE son_gebe_tar IS NULL OR son_tohumlama > son_gebe_tar
     )
-    SELECT kupe_no, son_tohumlama_tarihi, tohumlama_sayisi 
-    FROM GuncelDurum 
-    ORDER BY son_tohumlama_tarihi DESC;
+    SELECT 
+        b.kupe_no,
+        b.son_tohumlama as son_tohumlama_tarihi,
+        COUNT(t.id) as tohumlama_sayisi
+    FROM BosHayvanlar b
+    JOIN tohumlamalar t ON t.hayvan_id = b.hayvan_id
+    WHERE b.son_gebe_tar IS NULL OR t.tohumlama_tar > b.son_gebe_tar
+    GROUP BY b.hayvan_id, b.kupe_no, b.son_tohumlama
+    ORDER BY b.son_tohumlama DESC;
     """
     return con.execute(query).fetchall()
 
