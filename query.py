@@ -351,9 +351,11 @@ def interaktif():
             display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
         else:
             if args.kupe:
+                # Küpe aramasında tarih/gebe filtresiz tam döküm
                 q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(args.kupe))}) ORDER BY tohumlama_tar DESC"
-                r = con.execute(q, args.kupe).fetchall()
-                display(r, f"Küpe Geçmişi: {', '.join(args.kupe)}", dar=DAR_EKRAN)
+                rows = con.execute(q, args.kupe).fetchall()
+                baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
+                display(rows, baslik, dar=DAR_EKRAN)
             elif args.gebe == 0:
                 r = get_bos_hayvanlar(con)
                 display_boslar(r, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
