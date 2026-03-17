@@ -361,8 +361,8 @@ def interaktif():
             bos_rows = get_bos_hayvanlar(con)
             display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
         else:
-            if kupe_nos:
-                # Küpe aramasında tarih/gebe filtresiz tam döküm
+            # Küpe bypass: sadece "Tümü + Hepsi + Küpe" kombinasyonunda çalışır
+            if kupe_nos and gebe_filtre is None and tarih_bas is None:
                 q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(kupe_nos))}) ORDER BY tohumlama_tar DESC"
                 rows = con.execute(q, kupe_nos).fetchall()
                 baslik = f"Küpe Geçmişi: {', '.join(kupe_nos)}"
