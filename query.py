@@ -331,10 +331,18 @@ def interaktif():
         if h_raw:
             hayvan_ids = [int(p) for p in re.split(r"[+,; ]+", h_raw) if p.strip().isdigit()]
 
+        # Küpe bypass: küpe girildiyse diğer filtreleri atla, tüm geçmişi göster
+        if kupe_nos:
+            q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(kupe_nos))}) ORDER BY tohumlama_tar DESC"
+            rows = con.execute(q, kupe_nos).fetchall()
+            baslik = f"Küpe Geçmişi: {', '.join(kupe_nos)}"
+            display(rows, baslik, dar=DAR_EKRAN)
+            continue
+        
         rows = run_query(
             con,
             hayvan_ids=hayvan_ids,
-            kupe_nos=kupe_nos,
+            kupe_nos=None,
             gebe=gebe_filtre,
             tarih_bas=tarih_bas,
             tarih_bit=tarih_bit,
