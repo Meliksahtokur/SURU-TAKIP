@@ -363,8 +363,12 @@ def interaktif():
         else:
             # Küpe bypass: sadece "Tümü + Hepsi + Küpe" kombinasyonunda çalışır
             if kupe_nos and gebe_filtre is None and tarih_bas is None:
-                q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(kupe_nos))}) ORDER BY tohumlama_tar DESC"
-                rows = con.execute(q, kupe_nos).fetchall()
+                # UNION ALL ile küpe giriş sırasını koru
+                queries = []
+                for kupe in kupe_nos:
+                    queries.append(f"SELECT * FROM tohumlamalar WHERE kupe_no = '{kupe}' ORDER BY tohumlama_tar DESC")
+                q = " UNION ALL ".join(queries)
+                rows = con.execute(q).fetchall()
                 baslik = f"Küpe Geçmişi: {', '.join(kupe_nos)}"
                 display(rows, baslik, dar=DAR_EKRAN)
             elif gebe_filtre == 0:
