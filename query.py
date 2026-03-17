@@ -428,7 +428,13 @@ def cli_mode():
         tarih_bas=tarih_bas,
         tarih_bit=tarih_bit,
     )
-    if args.gebe == 0:
+    if args.kupe:
+        # Küpe bypass: diğer filtreleri atla, tüm geçmişi dök
+        q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(args.kupe))}) ORDER BY tohumlama_tar DESC"
+        rows = con.execute(q, args.kupe).fetchall()
+        baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
+        display(rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
+    elif args.gebe == 0:
         bos_rows = get_bos_hayvanlar(con)
         display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
     else:
