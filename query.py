@@ -363,14 +363,13 @@ def interaktif():
         else:
             # Küpe bypass: sadece "Tümü + Hepsi + Küpe" kombinasyonunda çalışır
             if kupe_nos and gebe_filtre is None and tarih_bas is None:
-                # UNION ALL ile küpe giriş sırasını koru
-                queries = []
+                # Küpe giriş sırasını koru (loop + extend)
+                all_rows = []
                 for kupe in kupe_nos:
-                    queries.append(f"SELECT * FROM tohumlamalar WHERE kupe_no = '{kupe}' ORDER BY tohumlama_tar DESC")
-                q = " UNION ALL ".join(queries)
-                rows = con.execute(q).fetchall()
+                    q = "SELECT * FROM tohumlamalar WHERE kupe_no = ? ORDER BY tohumlama_tar DESC"
+                    all_rows.extend(con.execute(q, (kupe,)).fetchall())
                 baslik = f"Küpe Geçmişi: {', '.join(kupe_nos)}"
-                display(rows, baslik, dar=DAR_EKRAN)
+                display(all_rows, baslik, dar=DAR_EKRAN)
             elif gebe_filtre == 0:
                 r = get_bos_hayvanlar(con)
                 display_boslar(r, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
