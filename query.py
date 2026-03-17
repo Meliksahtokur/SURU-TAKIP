@@ -433,26 +433,13 @@ def cli_mode():
         tarih_bit=tarih_bit,
     )
     if args.kupe:
-        # Küpe bypass: diğer filtreleri atla, tüm geçmişi dök
-        q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(args.kupe))}) ORDER BY tohumlama_tar DESC"
-        rows = con.execute(q, args.kupe).fetchall()
-        baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
-        display(rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
-    if args.kupe:
-        # Küpe bypass: diğer filtreleri atla, tüm geçmişi dök
-        q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(args.kupe))}) ORDER BY tohumlama_tar DESC"
-        rows = con.execute(q, args.kupe).fetchall()
-        baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
-        display(rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
-    if args.kupe:
-        # Küpe bypass: kullanıcı giriş sırasını koru (UNION ALL)
-        queries = []
+        # Küpe bypass: kullanıcı giriş sırasını koru
+        all_rows = []
         for kupe in args.kupe:
-            queries.append(f"SELECT * FROM tohumlamalar WHERE kupe_no = '{kupe}' ORDER BY tohumlama_tar DESC")
-        q = " UNION ALL ".join(queries)
-        rows = con.execute(q).fetchall()
+            q = "SELECT * FROM tohumlamalar WHERE kupe_no = ? ORDER BY tohumlama_tar DESC"
+            all_rows.extend(con.execute(q, (kupe,)).fetchall())
         baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
-        display(rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
+        display(all_rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
     elif args.gebe == 0:
         bos_rows = get_bos_hayvanlar(con)
         display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
