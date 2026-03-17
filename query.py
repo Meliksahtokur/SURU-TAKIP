@@ -361,13 +361,13 @@ def interaktif():
             bos_rows = get_bos_hayvanlar(con)
             display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
         else:
-            if args.kupe:
+            if kupe_nos:
                 # Küpe aramasında tarih/gebe filtresiz tam döküm
-                q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(args.kupe))}) ORDER BY tohumlama_tar DESC"
-                rows = con.execute(q, args.kupe).fetchall()
-                baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
+                q = f"SELECT * FROM tohumlamalar WHERE kupe_no IN ({','.join(['?']*len(kupe_nos))}) ORDER BY tohumlama_tar DESC"
+                rows = con.execute(q, kupe_nos).fetchall()
+                baslik = f"Küpe Geçmişi: {', '.join(kupe_nos)}"
                 display(rows, baslik, dar=DAR_EKRAN)
-            elif args.gebe == 0:
+            elif gebe_filtre == 0:
                 r = get_bos_hayvanlar(con)
                 display_boslar(r, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN)
             else:
