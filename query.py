@@ -134,18 +134,17 @@ def display_boslar(rows, baslik, dar=False):
     t.add_column("Son Tohumlama", style="green", justify="center")
     t.add_column("Geçen Gün", style="yellow", justify="center")
     t.add_column("Tohumlama Sayısı", style="red", justify="center")
+    from datetime import datetime
     for r in rows:
         gecen = "—"
         if r["son_tohumlama_tarihi"]:
             try:
-                # String geliyorsa parse et, objeyse direkt kullan
-                st = r["son_tohumlama_tarihi"]
-                d = datetime.strptime(st, "%Y-%m-%d") if isinstance(st, str) else st
-                fark = (datetime.now() - d).days
-                gecen = str(fark)
-            except Exception:
+                tarih_str = str(r["son_tohumlama_tarihi"])[:10]
+                d = datetime.strptime(tarih_str, "%Y-%m-%d")
+                gecen = str((datetime.now() - d).days)
+            except Exception: 
                 gecen = "ERR"
-        t.add_row(str(r["kupe_no"]), r["son_tohumlama_tarihi"] or "—", gecen, str(r["tohumlama_sayisi"]))
+        t.add_row(str(r["kupe_no"]), str(r["son_tohumlama_tarihi"])[:10] if r["son_tohumlama_tarihi"] else "—", gecen, str(r["tohumlama_sayisi"]))
     console.print(t)
 
 def display(rows: list[sqlite3.Row], baslik: str = "Sonuçlar", dar: bool = False):
