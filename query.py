@@ -71,8 +71,7 @@ def run_query(
     if gebe == 1:
         where.append("gebe = 1")
         where.append("(julianday('now') - julianday(tohumlama_tar)) <= 285")
-    elif gebe == 0:
-        where.append("(gebe = 0 OR gebe IS NULL OR (julianday('now') - julianday(tohumlama_tar)) > 285)")
+    # gebe == 0 mantığı arayüzde get_bos_hayvanlar() ile yönetildiği için buradan kaldırıldı.
 
     if tarih_bas:
         where.append("tohumlama_tar >= ?")
@@ -123,7 +122,9 @@ def get_bos_hayvanlar(con):
         SELECT kupe_no, MAX(tohumlama_tar) as son_gebe_tarihi
         FROM tohumlamalar WHERE gebe IN (1, '1', 'TRUE', 'true') GROUP BY kupe_no
     ) sg ON t.kupe_no = sg.kupe_no
-    WHERE sg.son_gebe_tarihi IS NULL OR t.tohumlama_tar > sg.son_gebe_tarihi
+    WHERE sg.son_gebe_tarihi IS NULL 
+       OR t.tohumlama_tar > sg.son_gebe_tarihi
+       OR (t.tohumlama_tar = sg.son_gebe_tarihi AND (julianday('now') - julianday(t.tohumlama_tar)) > 285)
     GROUP BY t.kupe_no ORDER BY son_tohumlama_tarihi DESC
     '''
     return con.execute(query).fetchall()
