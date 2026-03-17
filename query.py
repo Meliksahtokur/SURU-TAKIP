@@ -444,6 +444,15 @@ def cli_mode():
         rows = con.execute(q, args.kupe).fetchall()
         baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
         display(rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
+    if args.kupe:
+        # Küpe bypass: kullanıcı giriş sırasını koru (UNION ALL)
+        queries = []
+        for kupe in args.kupe:
+            queries.append(f"SELECT * FROM tohumlamalar WHERE kupe_no = '{kupe}' ORDER BY tohumlama_tar DESC")
+        q = " UNION ALL ".join(queries)
+        rows = con.execute(q).fetchall()
+        baslik = f"Küpe Geçmişi: {', '.join(args.kupe)}"
+        display(rows, baslik, dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
     elif args.gebe == 0:
         bos_rows = get_bos_hayvanlar(con)
         display_boslar(bos_rows, "Laktasyona Tekrar Giren Boşlar", dar=DAR_EKRAN if 'DAR_EKRAN' in globals() else False)
