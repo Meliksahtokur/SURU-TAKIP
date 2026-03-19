@@ -120,6 +120,8 @@ if st.sidebar.button("🌐 Veri Kazı ve Sync"):
         except Exception as e:
             st.sidebar.error(f"❌ Beklenmeyen hata: {e}")
 
+df_gecmis = fetch_gecmis()
+
 # --- ANA EKRAN MANTIĞI ---
 if df_raw.empty:
     st.warning("Veri bekleniyor...")
@@ -250,8 +252,8 @@ else:
         if selected_kno:
             # --- HAYVAN KARTI (CONTAINER) ---
             st.title(f"🐄 Hayvan Kartı: {selected_kno}")
-            df_single = df_raw[df_raw["kupe_no"] == selected_kno].copy()
-            df_single["Tarih"] = df_single["son_islem_tarihi"].dt.strftime('%Y-%m-%d')
+            df_single = df_gecmis[df_gecmis["kupe_no"] == selected_kno].copy()
+            df_single["Tarih"] = df_single["tohumlama_tar"].dt.strftime('%Y-%m-%d')
             
             # Hayvanın detaylı analizini bul
             animal_detail = df_active[df_active['kupe_no'] == selected_kno].iloc[0] if not df_active.empty and selected_kno in df_active['kupe_no'].values else None
