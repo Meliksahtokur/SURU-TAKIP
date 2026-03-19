@@ -277,7 +277,7 @@ else:
                     # Gebelik geçmişi
                     ever_pregnant = animal_detail['gebe_kaldi']
                     if ever_pregnant:
-                        col1.success(f"📊 **Gebelik Sayısı:** {df_single[df_single['gebe_mi'] == True].shape[0]}")
+                        col1.success(f"📊 **Gebelik Sayısı:** {df_single[df_single['gebe'] == True].shape[0]}")
                     else:
                         col1.warning("⚠️ **Hiç gebe kalmamış**")
                     
