@@ -250,48 +250,42 @@ else:
 
     elif selected == "Hayvanlar":
         if selected_kno:
-            # --- HAYVAN KARTI (CONTAINER) ---
+            # HAYVAN KARTI
             st.title(f"🐄 Hayvan Kartı: {selected_kno}")
             df_single = df_gecmis[df_gecmis["kupe_no"] == selected_kno].copy()
             df_single["Tarih"] = df_single["tohumlama_tar"].dt.strftime('%Y-%m-%d')
-            
-            # Hayvanın detaylı analizini bul
+
             animal_detail = df_active[df_active['kupe_no'] == selected_kno].iloc[0] if not df_active.empty and selected_kno in df_active['kupe_no'].values else None
-            
+
             with st.container(border=True):
-                # Üst satır - temel bilgiler
                 col1, col2, col3, col4 = st.columns(4)
                 is_gebe = df_single.iloc[0]["gebe"]
-                
+                t_no = int(animal_detail['t_no']) if animal_detail is not None else "-"
+                gecen_gun = int(animal_detail['gecen_gun']) if animal_detail is not None else "-"
+
                 col1.metric("Güncel Durum", "✅ GEBE" if is_gebe else "❌ BOŞ")
                 col2.metric("Durum", "🟢 Aktif" if animal_detail is not None else "🔴 Pasif")
-                col3.metric("Dönem Tohumlama", int(df_single.iloc[0]["t_no"]))
-                col4.metric("Son İşlemden Beri", f"{int(df_single.iloc[0]['gecen_gun'])} Gün")
-                
+                col3.metric("Dönem Tohumlama", t_no)
+                col4.metric("Son İşlemden Beri", f"{gecen_gun} Gün")
+
                 st.divider()
-                
-                # İkinci satır - detaylı analiz
+
                 if animal_detail is not None:
                     col1, col2, col3 = st.columns(3)
-                    
-                    # Gebelik geçmişi
-                    ever_pregnant = animal_detail['gebe_kaldi']
-                    if ever_pregnant:
-                        col1.success(f"📊 **Gebelik Sayısı:** {df_single[df_single['gebe'] == True].shape[0]}")
+
+                    toplam_gebelik = df_single[df_single['gebe'] == True].shape[0]
+                    if toplam_gebelik > 0:
+                        col1.success(f"📊 **Toplam Gebelik:** {toplam_gebelik}")
                     else:
                         col1.warning("⚠️ **Hiç gebe kalmamış**")
-                    
-                    # Son gebelik bilgisi
+
                     if animal_detail['son_gebe_tarihi'] is not None and pd.notna(animal_detail['son_gebe_tarihi']):
                         son_gebe = pd.to_datetime(animal_detail['son_gebe_tarihi'])
                         col2.info(f"🤰 **Son Gebelik:** {son_gebe.strftime('%Y-%m-%d')}")
-                        
-                        # Tahmini doğum
+
                         if animal_detail['tahmini_dogum'] is not None and pd.notna(animal_detail['tahmini_dogum']):
                             tahmini_dogum = pd.to_datetime(animal_detail['tahmini_dogum'])
                             col3.info(f"👶 **Tahmini Doğum:** {tahmini_dogum.strftime('%Y-%m-%d')}")
-                            
-                            # Doğuma kalan gün
                             kalan_gun = (tahmini_dogum - today).days
                             if kalan_gun > 0:
                                 st.metric("📅 Doğuma Kalan Gün", f"{kalan_gun} gün")
@@ -299,11 +293,10 @@ else:
                                 st.metric("👶 Doğum Üzerinden", f"{int(animal_detail['dogum_sonrasi_gun'])} gün")
                     else:
                         col2.info("🤰 **Son Gebelik:** Yok")
-                    
-                    # Tohumlama durumu
+
                     if animal_detail['tohumlamaya_hazir']:
                         st.success(f"✅ **Tohumlama Zamanı!** - Doğum üzerinden {int(animal_detail['dogum_sonrasi_gun'])} gün geçmiş.")
-            
+
             st.subheader("📜 İşlem Geçmişi")
             st.dataframe(
                 df_single[["Tarih", "gebe", "sperma", "not_"]]
