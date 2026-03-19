@@ -27,6 +27,23 @@ def fetch_from_supabase():
         st.sidebar.error(f"Bağlantı Hatası: {e}")
     return pd.DataFrame()
 
+@st.cache_data(ttl=300)
+def fetch_gecmis():
+    """Tüm tohumlama geçmişini tek seferde çeker"""
+    try:
+        endpoint = f"{SUPABASE_URL}/rest/v1/vethek_tohumlamalar?select=kupe_no,tohumlama_tar,gebe,sperma,not_&order=kupe_no,tohumlama_tar.desc"
+        resp = requests.get(endpoint, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        df = pd.DataFrame(resp.json())
+        if not df.empty:
+            df["kupe_no"] = df["kupe_no"].astype(str).str.strip().str.upper()
+            df["tohumlama_tar"] = pd.to_datetime(df["tohumlama_tar"])
+            df["gebe"] = df["gebe"].fillna(False).astype(bool)
+        return df
+    except Exception as e:
+        st.sidebar.error(f"Geçmiş Hatası: {e}")
+    return pd.DataFrame()
+
 def analyze_herd_status(df):
     """View'dan gelen veriyi dashboard için ayırır"""
     if df.empty:
