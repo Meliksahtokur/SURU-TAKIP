@@ -119,7 +119,7 @@ else:
         st.title("🚜 Sürü Özeti")
         
         # Aktif gebeler (son gebelik 300 günden az)
-        active_gebe_mask = (df_latest["gebe"] == True) & (df_latest["Gun"] <= 300)
+        active_gebe_mask = (df_latest["gebe_mi"] == True) & (df_latest["Gun"] <= 300)
         
         # Metrikler
         m1, m2, m3, m4 = st.columns(4)
