@@ -11,7 +11,7 @@ HEADERS = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "C
 
 st.set_page_config(page_title="Çiftlik Yönetim Sistemi", page_icon="🐄", layout="wide")
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def fetch_from_supabase():
     """Supabase view'dan sürü analizini çeker"""
     try:
