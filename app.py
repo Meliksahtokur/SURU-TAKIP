@@ -158,7 +158,7 @@ else:
                     df_action_display['tahmini_dogum'] = pd.to_datetime(df_action_display['tahmini_dogum']).dt.strftime('%Y-%m-%d')
                 
                 # Tabloyu göster
-                display_columns = ['kupe_no', 'son_islem_tarih', 'gun', 'neden', 'T.No', 'sperma']
+                display_columns = ['kupe_no', 'son_islem_tarih', 'gecen_gun', 'neden', 't_no', 'sperma']
                 if 'tahmini_dogum' in df_action_display.columns:
                     display_columns.insert(3, 'tahmini_dogum')
                 
