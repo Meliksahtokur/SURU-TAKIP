@@ -202,12 +202,12 @@ else:
         with tab2:
             st.subheader(f"Aktif Gebe Hayvanlar ({len(df_latest[active_gebe_mask])} baş)")
             if not df_latest[active_gebe_mask].empty:
-                df_preg = df_latest[active_gebe_mask].sort_values("Gun", ascending=False).copy()
+                df_preg = df_latest[active_gebe_mask].sort_values("gecen_gun", ascending=False).copy()
                 df_preg["Tarih"] = df_preg["son_islem_tarihi"].dt.strftime('%Y-%m-%d')
-                df_preg["Kalan"] = 285 - df_preg["Gun"]
+                df_preg["Kalan"] = 285 - df_preg["gecen_gun"]
                 st.dataframe(
-                    df_preg[["kupe_no", "Tarih", "T.No", "Gun", "Kalan", "sperma"]]
-                    .rename(columns={"kupe_no": "Küpe No", "Tarih": "Tohumlama", "Gun": "Gebe Gün", "Kalan": "Kalan Gün", "sperma": "Sperma"}),
+                    df_preg[["kupe_no", "Tarih", "t_no", "gecen_gun", "Kalan", "sperma"]]
+                    .rename(columns={"kupe_no": "Küpe No", "Tarih": "Tohumlama", "t_no": "T.No", "gecen_gun": "Gebe Gün", "Kalan": "Kalan Gün", "sperma": "Sperma"}),
                     use_container_width=True, 
                     hide_index=True
                 )
