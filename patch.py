@@ -107,8 +107,11 @@ def git_commit_push(target: Path):
     else:
         return  # git yok, sessizce geç
 
+    msg = input("Commit mesajı (boş bırakırsan otomatik): ").strip()
+    if not msg:
+        msg = f"patch: {target.name}"
     subprocess.run(["git", "add", str(target)], cwd=check)
-    subprocess.run(["git", "commit", "-m", f"patch: {target.name}"], cwd=check)
+    subprocess.run(["git", "commit", "-m", msg], cwd=check)
     push = subprocess.run(["git", "push"], cwd=check, capture_output=True, text=True)
     if push.returncode == 0:
         ok("Git: commit + push tamam")
