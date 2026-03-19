@@ -38,121 +38,20 @@ def fetch_from_supabase():
 
 @st.cache_data(ttl=300)
 def analyze_herd_status(df):
-    """Sürüdeki hayvanların durum analizini yapar - GELİŞTİRİLMİŞ VERSİYON"""
+    """Sürü analizi - Supabase'deki view'ı kullan"""
     if df.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     
+    # Basitleştirilmiş versiyon - gerçek analiz SQL view'da yapılacak
     today = pd.Timestamp.now().normalize()
     cutoff_date = pd.Timestamp('2025-01-01')
-    gestation_period = 285  # gün
-    waiting_period = 60     # doğum sonrası bekleme süresi
     
-    all_animals = df['kupe_no'].unique()
+    df['gun'] = (today - df['tohumlama_tar']).dt.days
+    df_active = df[df['tohumlama_tar'] >= cutoff_date].copy()
+    df_inactive = df[df['tohumlama_tar'] < cutoff_date].copy()
     
-    active_animals = []
-    inactive_animals = []
-    
-    for animal in all_animals:
-        animal_data = df[df['kupe_no'] == animal].sort_values('tohumlama_tar')
-        last_record = animal_data.iloc[-1]
-        last_date = last_record['tohumlama_tar']
-        
-        # Son kayıt 2025'ten önceyse pasif
-        if last_date < cutoff_date:
-            inactive_animals.append({
-                'kupe_no': animal,
-                'son_islem': last_date,
-                'gun': (today - last_date).days,
-                'durum': 'Pasif (2025 öncesi)'
-            })
-            continue
-        
-        # Temel bilgiler
-        ever_pregnant = animal_data['gebe'].any()
-        last_status = last_record['gebe']
-        days_since_last = (today - last_date).days
-        
-        # Son gebelik analizi
-        if ever_pregnant:
-            # Son gebeliği bul
-            last_pregnancy = animal_data[animal_data['gebe'] == True].iloc[-1]
-            last_pregnancy_date = last_pregnancy['tohumlama_tar']
-            
-            # Bu gebelikten doğum olması için gereken süre doldu mu?
-            days_since_pregnancy = (today - last_pregnancy_date).days
-            pregnancy_completed = days_since_pregnancy > gestation_period
-            
-            # Son gebelikten sonraki kayıtlar
-            post_pregnancy_records = animal_data[animal_data['tohumlama_tar'] > last_pregnancy_date]
-            has_post_pregnancy_insemination = len(post_pregnancy_records) > 0
-            
-            # Son gebelik hala devam ediyor olabilir
-            is_currently_pregnant = last_status and (days_since_pregnancy <= gestation_period)
-            
-            # Doğum yapmış mı? (Gebelik tamamlanmış ve son kayıt gebelik değil veya gebelikten sonra işlem var)
-            has_calved = pregnancy_completed and (not last_status or has_post_pregnancy_insemination)
-            
-        else:
-            # Hiç gebe kalmamış
-            last_pregnancy_date = None
-            has_post_pregnancy_insemination = False
-            is_currently_pregnant = False
-            has_calved = False
-            days_since_pregnancy = 0
-            pregnancy_completed = False
-        
-        # Doğum sonrası analiz
-        days_since_calving = None
-        ready_for_insemination = False
-        estimated_calving_date = None
-        
-        if has_calved and last_pregnancy_date:
-            # Doğum tarihi yaklaşık: gebelik tarihi + 285 gün
-            estimated_calving_date = last_pregnancy_date + pd.Timedelta(days=gestation_period)
-            days_since_calving = (today - estimated_calving_date).days
-            
-            # Doğum üzerinden 60 gün geçmiş ve henüz tohumlanmamışsa hazır
-            if days_since_calving >= waiting_period and not has_post_pregnancy_insemination:
-                ready_for_insemination = True
-        elif ever_pregnant and not has_calved and last_pregnancy_date:
-            # Hala gebe, tahmini doğum tarihini hesapla
-            estimated_calving_date = last_pregnancy_date + pd.Timedelta(days=gestation_period)
-        
-        active_animals.append({
-            'kupe_no': animal,
-            'son_islem': last_date,
-            'gun': days_since_last,
-            'gebe_mi': last_status,
-            'hic_gebe_kalmadi': not ever_pregnant,
-            'gebe_kaldi': ever_pregnant,
-            'son_gebe_tarihi': last_pregnancy_date,
-            'tahmini_dogum': estimated_calving_date,
-            'dogum_sonrasi_gun': days_since_calving,
-            'tohumlamaya_hazir': ready_for_insemination,
-            'gebelik_devam_ediyor': is_currently_pregnant if ever_pregnant else False,
-            'son_gebe_sonrasi_tohumlama': has_post_pregnancy_insemination if ever_pregnant else False,
-            'T.No': last_record['T.No'],
-            'sperma': last_record.get('sperma', ''),
-            'not_': last_record.get('not_', '')
-        })
-    
-    # DataFrame'leri oluştur
-    df_active = pd.DataFrame(active_animals)
-    df_inactive = pd.DataFrame(inactive_animals)
-    
-    if not df_active.empty:
-        # YENİ: Aksiyon bekleyenler - TÜM SENARYOLAR
-        # 1. Hiç gebe kalmamış olanlar
-        # 2. Son gebelikten sonra tohumlama yapılanlar (şu an gebe değilse)
-        # 3. Doğum yapmış ve tohumlama zamanı gelmiş olanlar (doğum üzerinden 60+ gün geçmiş ve henüz tohumlanmamış)
-        action_required_mask = (
-            (df_active['hic_gebe_kalmadi']) | 
-            ((df_active['gebe_kaldi']) & (df_active['son_gebe_sonrasi_tohumlama']) & (~df_active['gebe_mi'])) |
-            (df_active['tohumlamaya_hazir'] & (~df_active['son_gebe_sonrasi_tohumlama']))
-        )
-        df_action = df_active[action_required_mask].copy()
-    else:
-        df_action = pd.DataFrame()
+    # Basit aksiyon mantığı (SQL view hazır olana kadar)
+    df_action = df_active[df_active['gebe'] == False].copy()
     
     return df_active, df_inactive, df_action
 
@@ -182,10 +81,38 @@ if not df_raw.empty and search_query:
         st.sidebar.warning("Eşleşme yok.")
 
 st.sidebar.divider()
-st.sidebar.header("📥 Veri Kazıma")
-vethek_url = st.sidebar.text_input("Vethek URL")
-if st.sidebar.button("Kazı & Gönder"):
-    st.sidebar.info("Kazıma işlemi yakında eklenecek...")
+st.sidebar.header("📥 Veri Senkronizasyonu")
+if st.sidebar.button("🔄 SQLite → Supabase Sync"):
+    with st.sidebar.status("Senkronize ediliyor..."):
+        try:
+            import subprocess
+            result = subprocess.run(["python", "migrate.py"], capture_output=True, text=True)
+            if result.returncode == 0:
+                st.sidebar.success("✅ Senkronizasyon tamam!")
+                st.cache_data.clear()
+            else:
+                st.sidebar.error(f"❌ Hata: {result.stderr}")
+        except Exception as e:
+            st.sidebar.error(f"❌ Hata: {e}")
+
+vethek_url = st.sidebar.text_input("Vethek URL (scrape için)")
+if st.sidebar.button("🌐 Veri Kazı ve Sync"):
+    with st.sidebar.status("Kazınıyor ve senkronize ediliyor..."):
+        try:
+            import subprocess
+            # Önce scrape
+            subprocess.run(["python", "scrape.py", vethek_url], check=True)
+            # Sonra migrate
+            result = subprocess.run(["python", "migrate.py"], capture_output=True, text=True)
+            if result.returncode == 0:
+                st.sidebar.success("✅ Kazıma ve senkronizasyon tamam!")
+                st.cache_data.clear()
+            else:
+                st.sidebar.error(f"❌ Migrate hatası: {result.stderr}")
+        except subprocess.CalledProcessError as e:
+            st.sidebar.error(f"❌ Scrape hatası: {e}")
+        except Exception as e:
+            st.sidebar.error(f"❌ Beklenmeyen hata: {e}")
 
 # --- ANA EKRAN MANTIĞI ---
 if df_raw.empty:
@@ -401,35 +328,17 @@ else:
         tab1, tab2 = st.tabs(["📊 Stok Durumu", "📈 Kullanım Raporu"])
         
         
-        with tab4:
-            st.subheader("📅 Çiftlik Takvimi")
+        with stok_tab2:
+            st.subheader("📈 Kullanım Raporu")
             
-            # Takvim instance'ı oluştur (güvenli)
-            if takvim_available:
-                takvim = CiftlikTakvimi(df_raw, df_active)
-            
-            col1, col2 = st.columns([2, 1])
-            
-            with col1:
-                # Takvim görünümü
-                takvim.render_calendar_view()
-            
-            with col2:
-                # Haftalık ajanda
-                st.subheader("📋 Haftalık Ajanda")
-                weekly = takvim.get_weekly_agenda()
+            # Aylık tohumlama sayıları
+            if not df_raw.empty:
+                df_raw['ay'] = df_raw['tohumlama_tar'].dt.to_period('M')
+                aylik_tohumlama = df_raw.groupby('ay').size().reset_index(name='sayi')
+                aylik_tohumlama['ay'] = aylik_tohumlama['ay'].astype(str)
                 
-                if not weekly.empty:
-                    for _, event in weekly.iterrows():
-                        gun_fark = event['gun']
-                        if gun_fark == 0:
-                            st.error(f"**BUGÜN:** {event['hayvan']} - {event['aciklama']}")
-                        elif gun_fark == 1:
-                            st.warning(f"**YARIN:** {event['hayvan']} - {event['aciklama']}")
-                        else:
-                            st.info(f"**{gun_fark} gün sonra:** {event['hayvan']} - {event['aciklama']}")
-                else:
-                        st.info("Önümüzdeki hafta planlanmış event yok.")
+                st.subheader("Aylık Tohumlama Sayıları")
+                st.dataframe(aylik_tohumlama, use_container_width=True, hide_index=True)
         with tab1:
             st.info("Stok modülü geliştirme aşamasında...")
             
@@ -479,7 +388,7 @@ else:
                 st.write(f"📅 En eski kayıt: {en_eski.strftime('%Y-%m-%d')}")
                 st.write(f"📅 En yeni kayıt: {en_yeni.strftime('%Y-%m-%d')}")
 
-# Takvim modülü lazy load
+# Takvim modülü lazy load (EN ÜSTE ALINDI)
 try:
     from calendar_events import CiftlikTakvimi
     takvim_available = True
