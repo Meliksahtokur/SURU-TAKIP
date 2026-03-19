@@ -112,8 +112,8 @@ else:
     df_active, df_inactive, df_action = analyze_herd_status(df_raw)
     
     # Her hayvanın son durumu (tüm aktifler için)
-    df_latest = df_raw[df_raw['kupe_no'].isin(df_active['kupe_no'])].sort_values("tohumlama_tar").groupby("kupe_no").last().reset_index()
-    df_latest["Gun"] = (today - df_latest["tohumlama_tar"]).dt.days
+    df_latest = df_active.copy()
+    df_latest["Gun"] = df_latest["gecen_gun"]
 
     if selected == "Dashboard":
         st.title("🚜 Sürü Özeti")
@@ -203,7 +203,7 @@ else:
             st.subheader(f"Aktif Gebe Hayvanlar ({len(df_latest[active_gebe_mask])} baş)")
             if not df_latest[active_gebe_mask].empty:
                 df_preg = df_latest[active_gebe_mask].sort_values("Gun", ascending=False).copy()
-                df_preg["Tarih"] = df_preg["tohumlama_tar"].dt.strftime('%Y-%m-%d')
+                df_preg["Tarih"] = df_preg["son_islem_tarihi"].dt.strftime('%Y-%m-%d')
                 df_preg["Kalan"] = 285 - df_preg["Gun"]
                 st.dataframe(
                     df_preg[["kupe_no", "Tarih", "T.No", "Gun", "Kalan", "sperma"]]
@@ -232,8 +232,8 @@ else:
         if selected_kno:
             # --- HAYVAN KARTI (CONTAINER) ---
             st.title(f"🐄 Hayvan Kartı: {selected_kno}")
-            df_single = df_raw[df_raw["kupe_no"] == selected_kno].sort_values("tohumlama_tar", ascending=False).copy()
-            df_single["Tarih"] = df_single["tohumlama_tar"].dt.strftime('%Y-%m-%d')
+            df_single = df_raw[df_raw["kupe_no"] == selected_kno].copy()
+            df_single["Tarih"] = df_single["son_islem_tarihi"].dt.strftime('%Y-%m-%d')
             
             # Hayvanın detaylı analizini bul
             animal_detail = df_active[df_active['kupe_no'] == selected_kno].iloc[0] if not df_active.empty and selected_kno in df_active['kupe_no'].values else None
@@ -246,7 +246,7 @@ else:
                 col1.metric("Güncel Durum", "✅ GEBE" if is_gebe else "❌ BOŞ")
                 col2.metric("Durum", "🟢 Aktif" if animal_detail is not None else "🔴 Pasif")
                 col3.metric("Dönem Tohumlama", int(df_single.iloc[0]["T.No"]))
-                col4.metric("Son İşlemden Beri", f"{int((today - df_single.iloc[0]['tohumlama_tar']).days)} Gün")
+                col4.metric("Son İşlemden Beri", f"{int(df_single.iloc[0]['gecen_gun'])} Gün")
                 
                 st.divider()
                 
@@ -321,7 +321,7 @@ else:
             
             # Aylık tohumlama sayıları
             if not df_raw.empty:
-                df_raw['ay'] = df_raw['tohumlama_tar'].dt.to_period('M')
+                df_raw['ay'] = df_raw['son_islem_tarihi'].dt.to_period('M')
                 aylik_tohumlama = df_raw.groupby('ay').size().reset_index(name='sayi')
                 aylik_tohumlama['ay'] = aylik_tohumlama['ay'].astype(str)
                 
@@ -341,7 +341,7 @@ else:
             st.info("Rapor modülü geliştirme aşamasında...")
             
             # Aylık tohumlama sayıları
-            df_raw['ay'] = df_raw['tohumlama_tar'].dt.to_period('M')
+            df_raw['ay'] = df_raw['son_islem_tarihi'].dt.to_period('M')
             aylik_tohumlama = df_raw.groupby('ay').size().reset_index(name='sayi')
             aylik_tohumlama['ay'] = aylik_tohumlama['ay'].astype(str)
             
@@ -371,8 +371,8 @@ else:
                 st.metric("Pasif Hayvan", len(df_inactive))
                 st.metric("Aksiyon Bekleyen", len(df_action))
                 
-                en_eski = df_raw['tohumlama_tar'].min()
-                en_yeni = df_raw['tohumlama_tar'].max()
+                en_eski = df_raw['son_islem_tarihi'].min()
+                en_yeni = df_raw['son_islem_tarihi'].max()
                 st.write(f"📅 En eski kayıt: {en_eski.strftime('%Y-%m-%d')}")
                 st.write(f"📅 En yeni kayıt: {en_yeni.strftime('%Y-%m-%d')}")
 
