@@ -65,6 +65,7 @@ if not df_raw.empty and search_query:
     matches = df_raw[df_raw["kupe_no"].str.endswith(search_query)]["kupe_no"].unique()
     if len(matches) > 0:
         selected_kno = st.sidebar.selectbox("Eşleşen Hayvanı Seç:", matches)
+        selected = "Hayvanlar"
     else:
         st.sidebar.warning("Eşleşme yok.")
 
@@ -241,11 +242,11 @@ else:
             with st.container(border=True):
                 # Üst satır - temel bilgiler
                 col1, col2, col3, col4 = st.columns(4)
-                is_gebe = df_single.iloc[0]["gebe"]
+                is_gebe = df_single.iloc[0]["gebe_mi"]
                 
                 col1.metric("Güncel Durum", "✅ GEBE" if is_gebe else "❌ BOŞ")
                 col2.metric("Durum", "🟢 Aktif" if animal_detail is not None else "🔴 Pasif")
-                col3.metric("Dönem Tohumlama", int(df_single.iloc[0]["T.No"]))
+                col3.metric("Dönem Tohumlama", int(df_single.iloc[0]["t_no"]))
                 col4.metric("Son İşlemden Beri", f"{int(df_single.iloc[0]['gecen_gun'])} Gün")
                 
                 st.divider()
