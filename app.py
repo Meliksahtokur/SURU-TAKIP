@@ -11,27 +11,18 @@ HEADERS = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "C
 
 st.set_page_config(page_title="Çiftlik Yönetim Sistemi", page_icon="🐄", layout="wide")
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=60)
 def fetch_from_supabase():
-    """Supabase'den tüm tohumlama kayıtlarını çeker"""
+    """Supabase view'dan sürü analizini çeker"""
     try:
-        columns = "kupe_no,tohumlama_tar,gebe,sperma,not_"
-        endpoint = f"{SUPABASE_URL}/rest/v1/vethek_tohumlamalar?select={columns}"
+        endpoint = f"{SUPABASE_URL}/rest/v1/hayvan_durum_analizi?select=*"
         resp = requests.get(endpoint, headers=HEADERS, timeout=15)
         resp.raise_for_status()
         df = pd.DataFrame(resp.json())
-        
         if not df.empty:
             df["kupe_no"] = df["kupe_no"].astype(str).str.strip().str.upper()
-            df["tohumlama_tar"] = pd.to_datetime(df["tohumlama_tar"])
-            df["gebe"] = df["gebe"].fillna(False).astype(bool)
-            df = df.sort_values(["kupe_no", "tohumlama_tar"])
-            
-            # Her hayvan için dönem numarasını hesapla (gebelikler arası dönemler)
-            df['period'] = df.groupby('kupe_no')['gebe'].shift(1).fillna(False).astype(bool).groupby(df['kupe_no']).cumsum()
-            df['T.No'] = df.groupby(['kupe_no', 'period']).cumcount() + 1
-            
-            return df
+            df["son_islem_tarihi"] = pd.to_datetime(df["son_islem_tarihi"])
+        return df
     except Exception as e:
         st.sidebar.error(f"Bağlantı Hatası: {e}")
     return pd.DataFrame()
