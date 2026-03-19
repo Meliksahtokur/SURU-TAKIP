@@ -305,7 +305,13 @@ else:
                         st.success(f"✅ **Tohumlama Zamanı!** - Doğum üzerinden {int(animal_detail['dogum_sonrasi_gun'])} gün geçmiş.")
             
             st.subheader("📜 İşlem Geçmişi")
-            st.dataframe(df_single[["Tarih", "gebe_mi", "t_no", "sperma", "not_"]], use_container_width=True, hide_index=True)
+            st.dataframe(
+                df_single[["Tarih", "gebe", "sperma", "not_"]]
+                .rename(columns={"Tarih": "Tarih", "gebe": "Gebe", "sperma": "Sperma", "not_": "Not"})
+                .sort_values("Tarih", ascending=False),
+                use_container_width=True,
+                hide_index=True
+            )
         else:
             st.info("🔍 Lütfen sol panelden bir küpe numarası arayın veya seçin.")
             
