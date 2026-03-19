@@ -167,7 +167,7 @@ else:
                     .rename(columns={
                         'kupe_no': 'Küpe No', 
                         'son_islem_tarih': 'Son İşlem', 
-                        'gun': 'Gün', 
+                        'gecen_gun': 'Gün', 
                         'neden': 'Aksiyon Nedeni',
                         'tahmini_dogum': 'Tahmini Doğum',
                         'T.No': 'T.No', 
