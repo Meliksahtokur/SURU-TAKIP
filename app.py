@@ -218,10 +218,10 @@ else:
             if pasif_goruntule and not df_inactive.empty:
                 st.subheader(f"Pasif Hayvanlar (2025 öncesi kayıt) - {len(df_inactive)} baş")
                 df_inactive_display = df_inactive.copy()
-                df_inactive_display['son_islem'] = pd.to_datetime(df_inactive_display['son_islem']).dt.strftime('%Y-%m-%d')
+                df_inactive_display['son_islem_tarihi'] = pd.to_datetime(df_inactive_display['son_islem_tarihi']).dt.strftime('%Y-%m-%d')
                 st.dataframe(
-                    df_inactive_display[['kupe_no', 'son_islem', 'gun', 'durum']]
-                    .rename(columns={'kupe_no': 'Küpe No', 'son_islem': 'Son İşlem', 'gun': 'Gün', 'durum': 'Durum'}),
+                    df_inactive_display[['kupe_no', 'son_islem_tarihi', 'gecen_gun']]
+                    .rename(columns={'kupe_no': 'Küpe No', 'son_islem_tarihi': 'Son İşlem', 'gecen_gun': 'Gün'}),
                     use_container_width=True,
                     hide_index=True
                 )
