@@ -27,22 +27,19 @@ def fetch_from_supabase():
         st.sidebar.error(f"Bağlantı Hatası: {e}")
     return pd.DataFrame()
 
-@st.cache_data(ttl=300)
 def analyze_herd_status(df):
-    """Sürü analizi - Supabase'deki view'ı kullan"""
+    """View'dan gelen veriyi dashboard için ayırır"""
     if df.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    
-    # Basitleştirilmiş versiyon - gerçek analiz SQL view'da yapılacak
-    today = pd.Timestamp.now().normalize()
-    cutoff_date = pd.Timestamp('2025-01-01')
-    
-    df['gun'] = (today - df['tohumlama_tar']).dt.days
-    df_active = df[df['tohumlama_tar'] >= cutoff_date].copy()
-    df_inactive = df[df['tohumlama_tar'] < cutoff_date].copy()
-    
-    # Basit aksiyon mantığı (SQL view hazır olana kadar)
-    df_action = df_active[df_active['gebe'] == False].copy()
+    df_inactive = df[df["pasif_mi"] == True].copy()
+    df_active = df[df["pasif_mi"] == False].copy()
+    action_mask = (
+        df_active["hic_gebe_kalmadi"] |
+        (df_active["son_gebe_sonrasi_tohumlama"] & ~df_active["gebe_mi"]) |
+        df_active["tohumlama_zamani"]
+    )
+    df_action = df_active[action_mask].copy()
+    return df_active, df_inactive, df_action
     
     return df_active, df_inactive, df_action
 
