@@ -261,7 +261,7 @@ else:
             with st.container(border=True):
                 # Üst satır - temel bilgiler
                 col1, col2, col3, col4 = st.columns(4)
-                is_gebe = df_single.iloc[0]["gebe_mi"]
+                is_gebe = df_single.iloc[0]["gebe"]
                 
                 col1.metric("Güncel Durum", "✅ GEBE" if is_gebe else "❌ BOŞ")
                 col2.metric("Durum", "🟢 Aktif" if animal_detail is not None else "🔴 Pasif")
