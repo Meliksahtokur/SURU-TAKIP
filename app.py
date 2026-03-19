@@ -138,7 +138,7 @@ else:
             if not df_action.empty:
                 # Detaylı bilgileri ekle
                 df_action_display = df_action.copy()
-                df_action_display['son_islem_tarih'] = pd.to_datetime(df_action_display['son_islem']).dt.strftime('%Y-%m-%d')
+                df_action_display['son_islem_tarih'] = pd.to_datetime(df_action_display['son_islem_tarihi']).dt.strftime('%Y-%m-%d')
                 
                 # Durum açıklaması
                 def get_action_reason(row):
