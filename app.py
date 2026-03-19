@@ -301,10 +301,10 @@ else:
                 display_df = df_active.assign(Durum='Aktif')
             
             if not display_df.empty:
-                display_df['son_islem'] = pd.to_datetime(display_df['son_islem']).dt.strftime('%Y-%m-%d')
+                display_df['son_islem_tarihi'] = pd.to_datetime(display_df['son_islem_tarihi']).dt.strftime('%Y-%m-%d')
                 st.dataframe(
-                    display_df[['kupe_no', 'son_islem', 'gun', 'Durum', 'gebe_mi']]
-                    .rename(columns={'kupe_no': 'Küpe No', 'son_islem': 'Son İşlem', 'gun': 'Gün', 'gebe_mi': 'Gebe'})
+                    display_df[['kupe_no', 'son_islem_tarihi', 'gecen_gun', 'Durum', 'gebe_mi']]
+                    .rename(columns={'kupe_no': 'Küpe No', 'son_islem_tarihi': 'Son İşlem', 'gecen_gun': 'Gün', 'gebe_mi': 'Gebe'})
                     .sort_values('Küpe No'),
                     use_container_width=True,
                     hide_index=True
