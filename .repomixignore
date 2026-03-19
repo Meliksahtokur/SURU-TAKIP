@@ -1,0 +1,43 @@
+# DB ve ağır dosyalar
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.dump
+
+# Loglar
+*.log
+
+# Cache / temp
+tmp/
+temp/
+.cache/
+__pycache__/
+*.pyc
+
+# Node / build
+node_modules/
+dist/
+build/
+
+# Media
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# Büyük JSON (opsiyonel)
+*.json
+
+# Senin özel klasör varsa ekle
+data/
+storage/

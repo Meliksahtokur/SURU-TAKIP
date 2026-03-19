@@ -36,6 +36,7 @@ def fetch_from_supabase():
         st.sidebar.error(f"Bağlantı Hatası: {e}")
     return pd.DataFrame()
 
+@st.cache_data(ttl=300)
 def analyze_herd_status(df):
     """Sürüdeki hayvanların durum analizini yapar - GELİŞTİRİLMİŞ VERSİYON"""
     if df.empty:
@@ -403,8 +404,9 @@ else:
         with tab4:
             st.subheader("📅 Çiftlik Takvimi")
             
-            # Takvim instance'ı oluştur
-            takvim = CiftlikTakvimi(df_raw, df_active)
+            # Takvim instance'ı oluştur (güvenli)
+            if takvim_available:
+                takvim = CiftlikTakvimi(df_raw, df_active)
             
             col1, col2 = st.columns([2, 1])
             
@@ -427,7 +429,8 @@ else:
                         else:
                             st.info(f"**{gun_fark} gün sonra:** {event['hayvan']} - {event['aciklama']}")
                 else:
-                    st.info("Önümüzdeki hafta planlanmış event yok.")with tab1:
+                        st.info("Önümüzdeki hafta planlanmış event yok.")
+        with tab1:
             st.info("Stok modülü geliştirme aşamasında...")
             
             # Basit sperma stok takibi
@@ -475,4 +478,11 @@ else:
                 en_yeni = df_raw['tohumlama_tar'].max()
                 st.write(f"📅 En eski kayıt: {en_eski.strftime('%Y-%m-%d')}")
                 st.write(f"📅 En yeni kayıt: {en_yeni.strftime('%Y-%m-%d')}")
-\nfrom calendar_events import CiftlikTakvimi
+
+# Takvim modülü lazy load
+try:
+    from calendar_events import CiftlikTakvimi
+    takvim_available = True
+except ImportError:
+    takvim_available = False
+    st.warning("Takvim modülü yüklenemedi, plotly kurulu mu?")
